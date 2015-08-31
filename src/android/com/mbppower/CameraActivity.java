@@ -79,17 +79,11 @@ public class CameraActivity extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 	    appResourcesPackage = getActivity().getPackageName();
-
-	    // Inflate the layout for this fragment
 	    view = inflater.inflate(getResources().getIdentifier("camera_activity", "layout", appResourcesPackage), container, false);
 	    createCameraPreview();
 	    return view;
     }
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+	
 	public void setRect(int x, int y, int width, int height){
 		this.x = x;
 		this.y = y;
@@ -212,9 +206,9 @@ public class CameraActivity extends Fragment {
         super.onResume();
 
         mCamera = Camera.open(defaultCameraId);
-
         if (cameraParameters != null) {
-          mCamera.setParameters(cameraParameters);
+			cameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+			mCamera.setParameters(cameraParameters);
         }
 
         cameraCurrentlyLocked = defaultCameraId;
@@ -278,6 +272,7 @@ public class CameraActivity extends Fragment {
 		mCamera = Camera.open((cameraCurrentlyLocked + 1) % numberOfCameras);
 
 		if (cameraParameters != null) {
+			cameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
 			mCamera.setParameters(cameraParameters);
 		}
 
@@ -291,15 +286,12 @@ public class CameraActivity extends Fragment {
     }
 
     public void setCameraParameters(Camera.Parameters params) {
-      cameraParameters = params;
+		cameraParameters = params;
 
-      if (mCamera != null && cameraParameters != null) {
-        mCamera.setParameters(cameraParameters);
-      }
-    }
-
-    public boolean hasFrontCamera(){
-        return getActivity().getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
+		if (mCamera != null && cameraParameters != null) {
+			cameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+			mCamera.setParameters(cameraParameters);
+		}
     }
 
     public Bitmap cropBitmap(Bitmap bitmap, Rect rect){
@@ -385,8 +377,8 @@ public class CameraActivity extends Fragment {
 			canTakePicture = true;
 		}
 	}
-    private void generatePictureFromView(final Bitmap originalPicture, final Bitmap picture){
-
+	
+    private void generatePictureFromView(final Bitmap originalPicture, final Bitmap picture) {
 	    final FrameLayout cameraLoader = (FrameLayout)view.findViewById(getResources().getIdentifier("camera_loader", "id", appResourcesPackage));
 	    cameraLoader.setVisibility(View.VISIBLE);
 	    final ImageView pictureView = (ImageView) view.findViewById(getResources().getIdentifier("picture_view", "id", appResourcesPackage));
@@ -421,8 +413,7 @@ public class CameraActivity extends Fragment {
 	    }.start();
     }
 
-    private File getOutputMediaFile(String suffix){
-
+    private File getOutputMediaFile(String suffix) {
 	    File mediaStorageDir = getActivity().getApplicationContext().getFilesDir();
 	    /*if(Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED_READ_ONLY) {
 		    mediaStorageDir = new File(Environment.getExternalStorageDirectory() + "/Android/data/" + getActivity().getApplicationContext().getPackageName() + "/Files");
@@ -482,13 +473,7 @@ public class CameraActivity extends Fragment {
         v.draw(c);
         return b;
     }
-    
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
 }
-
 
 class Preview extends RelativeLayout implements SurfaceHolder.Callback {
     private final String TAG = "Preview";
@@ -745,14 +730,15 @@ class Preview extends RelativeLayout implements SurfaceHolder.Callback {
         }
         return data;
     }
+	
     public void setOneShotPreviewCallback(Camera.PreviewCallback callback) {
         if(mCamera != null) {
             mCamera.setOneShotPreviewCallback(callback);
         }
     }
 }
-class TapGestureDetector extends GestureDetector.SimpleOnGestureListener{
 
+class TapGestureDetector extends GestureDetector.SimpleOnGestureListener{
 	@Override
 	public boolean onDown(MotionEvent e) {
 		return false;
@@ -768,9 +754,8 @@ class TapGestureDetector extends GestureDetector.SimpleOnGestureListener{
 		return true;
 	}
 }
-class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Callback{
-    private final String TAG = "CustomSurfaceView";
 
+class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Callback{
     CustomSurfaceView(Context context){
         super(context);
     }
